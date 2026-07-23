@@ -1,0 +1,35 @@
+# Local Codex metadata
+/.agents/
+/.codex/
+
+# Build trees and downloaded toolchains
+/build/
+/build-native/
+/runtime/
+/downloads/
+/dist/
+
+# Runtime/test output
+/spool/
+/spool-test/
+/system_driver_inspect/
+/install-elevated*.log
+/tests/*.pbm
+
+# Canon's proprietary legacy driver is not redistributed
+/LBP-810_R110_V110_Win_x32_EN_7.exe
+/LBP-810_R110_V110_Win_x32_EN_7/
+
+# Large upstream libcapt test fixtures are not needed to build the bridge
+/third_party/libcapt/examples/data/*.pbm
+/third_party/libcapt/examples/data/*.pdf
+/third_party/libcapt/tests/Compression/data/*.pbm
+/third_party/libcapt/tests/Compression/data/*.pdf
+/third_party/libcapt/scripts/filter/captfilter
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+*.user
+*.suo
+*.VC.db

@@ -1,0 +1,188 @@
+name: Core tests
+on: [push, pull_request]
+
+jobs:
+  Ubuntu:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "22.04"
+          - "24.04"
+    name: Ubuntu ${{ matrix.os }}
+    runs-on: ubuntu-${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install apt packages
+        run: |
+          sudo apt-get update -y --fix-missing
+          sudo apt-get install -y cmake gcc ninja-build
+
+      - name: Configure
+        run: cmake -G Ninja -S. -B build -DLIBCAPT_SANITIZE=ON -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -j
+
+  Debian:
+    needs: Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "12"
+          - "13"
+    name: Debian ${{ matrix.os }} (x86_64)
+    runs-on: ubuntu-24.04
+    container:
+      image: debian:${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install apt packages
+        run: |
+          apt-get update -y --fix-missing
+          apt-get install -y build-essential libgtest-dev libgmock-dev ninja-build cmake
+
+      - name: Configure
+        run: cmake -G Ninja -S. -B build -DLIBCAPT_SANITIZE=ON -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -j
+
+  FreeBSD:
+    needs: Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        release:
+          - "14.3"
+    defaults:
+      run:
+        shell: freebsd {0}
+    name: FreeBSD ${{ matrix.release }}-RELEASE
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run FreeBSD VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: ${{ matrix.release }}
+          prepare: pkg install -y cmake googletest llvm-devel ninja
+          envs: 'GITHUB_ACTIONS'
+
+      - name: Configure
+        run: cmake -G Ninja -S $GITHUB_WORKSPACE -B $GITHUB_WORKSPACE/build -DLIBCAPT_SANITIZE=ON -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build $GITHUB_WORKSPACE/build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir $GITHUB_WORKSPACE/build --output-on-failure -j
+
+  OpenBSD:
+    needs: Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        release:
+          - "7.7"
+    defaults:
+      run:
+        shell: openbsd {0}
+    name: OpenBSD ${{ matrix.release }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Run OpenBSD VM
+        uses: vmactions/openbsd-vm@v1
+        with:
+          release: ${{ matrix.release }}
+          prepare: pkg_add cmake gtest llvm ninja
+          envs: 'GITHUB_ACTIONS'
+
+      - name: Configure
+        run: cmake -G Ninja -S $GITHUB_WORKSPACE -B $GITHUB_WORKSPACE/build -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build $GITHUB_WORKSPACE/build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir $GITHUB_WORKSPACE/build --output-on-failure -j
+
+  Alpine:
+    needs: Ubuntu
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+          - x86
+          - armv7
+          - aarch64
+          - riscv64
+          - ppc64le
+        branch:
+          - v3.22
+    defaults:
+      run:
+        shell: alpine.sh {0}
+    name: Alpine ${{ matrix.branch }} (${{ matrix.arch }})
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Setup Alpine
+        uses: jirutka/setup-alpine@v1
+        with:
+          branch: v3.22
+          arch: ${{ matrix.arch }}
+          packages: >
+            build-base cmake samurai gtest-dev gmock
+
+      - name: Configure
+        run: cmake -G Ninja -S. -B build -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -j
+
+  Windows:
+    needs: Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "2025"
+    env:
+      CC: cl
+      CXX: cl
+    name: Windows ${{ matrix.os }} (MSVC)
+    runs-on: windows-${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Configure
+        run: cmake -S. -B build -DLIBCAPT_BUILD_EXAMPLES=ON -DLIBCAPT_BUILD_TESTS=ON # -DCMAKE_CXX_FLAGS="/WX" # TODO: fix MSVC warnings
+
+      - name: Compile
+        run: cmake --build build -v -j
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -j

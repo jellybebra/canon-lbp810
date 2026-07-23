@@ -1,0 +1,32 @@
+THIRD-PARTY COMPONENTS
+======================
+
+captppd
+  Copyright (c) darkvision77 and contributors.
+  BSD 2-Clause License.
+  https://github.com/darkvision77/captppd
+
+libcapt
+  Copyright (c) darkvision77 and contributors.
+  BSD 2-Clause License.
+  https://github.com/darkvision77/libcapt
+
+Ghostscript 10.07.1
+  GNU Affero General Public License, version 3.
+  https://ghostscript.com/
+  https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10071
+
+The package contains an unmodified MSYS2 build of Ghostscript and its runtime
+libraries. License texts are included in the licenses directory. Corresponding
+MSYS2 package sources and build recipes are available from:
+  https://packages.msys2.org/packages/mingw-w64-ucrt-x86_64-ghostscript
+  https://github.com/msys2/MINGW-packages
+
+IMPORTANT: Artifex states that software distributed together with AGPL
+Ghostscript must satisfy the AGPL terms. The complete corresponding source for
+this package is published under AGPLv3-or-later at:
+  https://github.com/jellybebra/canon-lbp810
+This notice is not legal advice.
+
+Canon and LASER SHOT are trademarks of Canon Inc. This independent package is
+not affiliated with or endorsed by Canon Inc.

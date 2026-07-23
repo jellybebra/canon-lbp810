@@ -1,0 +1,30 @@
+name: Compression tests
+on: [push, pull_request]
+
+jobs:
+  Ubuntu:
+    name: Ubuntu 24.04
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install apt packages
+        run: |
+          sudo apt-get update -y --fix-missing
+          sudo apt-get install -y cmake gcc ninja-build poppler-utils gdb ghostscript libgtest-dev libgmock-dev
+
+      - name: Install captfilter deps
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install libpopt0:i386
+
+      - name: Configure
+        run: cmake -G Ninja -S. -B build -DLIBCAPT_SANITIZE=ON -DLIBCAPT_BUILD_TESTS=ON -DLIBCAPT_COMPRESSION_TESTS=ON -DCMAKE_CXX_FLAGS="-Werror"
+
+      - name: Compile
+        run: cmake --build build -v -j
+
+      - name: Run compression tests
+        run: ctest --test-dir build --output-on-failure -j -L compression

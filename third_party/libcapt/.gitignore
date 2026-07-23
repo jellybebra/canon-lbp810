@@ -1,0 +1,13 @@
+.cache/
+__pycache__/
+.vscode/
+
+/build/
+/libcapt/Config.hpp
+
+*.obj
+*.pyc
+*.lib
+*.pch
+*.o
+*~

@@ -1,0 +1,26 @@
+Canon LBP-810 Windows 11 Bridge
+Copyright (C) 2026 Canon LBP-810 Windows 11 Bridge contributors
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more
+details.
+
+The complete license text is available at:
+https://www.gnu.org/licenses/agpl-3.0.txt
+
+A verbatim copy of the GNU AGPL v3 and all applicable third-party license texts
+are included in every binary release under the "licenses" directory.
+
+The files under third_party/captppd and third_party/libcapt retain their
+respective BSD 2-Clause licenses. See the LICENSE file in each directory.
+
+Canon and LASER SHOT are trademarks of Canon Inc. This independent project is
+not affiliated with or endorsed by Canon Inc.

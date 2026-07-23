@@ -1,0 +1,51 @@
+name: Core tests
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            os: ubuntu
+            os-version: '22.04'
+          - arch: x86_64
+            os: ubuntu
+            os-version: '24.04'
+
+          - arch: x86_64
+            os: debian
+            os-version: bookworm
+          - arch: x86_64
+            os: debian
+            os-version: trixie
+          - arch: aarch64
+            os: debian
+            os-version: bookworm
+          - arch: armv7
+            os: debian
+            os-version: bookworm
+
+          - arch: x86_64
+            os: fedora
+            os-version: '42'
+
+          - arch: x86_64
+            os: freebsd
+            os-version: '14.3'
+          - arch: x86_64
+            os: openbsd
+            os-version: '7.7'
+    uses: ./.github/workflows/build.yml
+    with:
+      arch: ${{ matrix.arch }}
+      os: ${{ matrix.os }}
+      os-version: ${{ matrix.os-version }}
+      cmake-args: ${{ matrix.os != 'openbsd' && matrix.arch == 'x86_64' && '-DCAPTPPD_SANITIZE=ON -DLIBCAPT_SANITIZE=ON' || '' }}
+      cxxflags: -Werror
+      tests: true
+      verify: true
+      package: false
+      upload: false
