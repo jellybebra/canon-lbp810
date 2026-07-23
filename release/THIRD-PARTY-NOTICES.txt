@@ -11,10 +11,10 @@ libcapt
   BSD 2-Clause License.
   https://github.com/darkvision77/libcapt
 
-Ghostscript 10.07.1
+Ghostscript (see GHOSTSCRIPT-VERSION in the package)
   GNU Affero General Public License, version 3.
   https://ghostscript.com/
-  https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/tag/gs10071
+  https://github.com/ArtifexSoftware/ghostpdl-downloads/releases
 
 The package contains an unmodified MSYS2 build of Ghostscript and its runtime
 libraries. License texts are included in the licenses directory. Corresponding

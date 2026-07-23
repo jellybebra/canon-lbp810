@@ -1,16 +1,26 @@
 [CmdletBinding()]
 param(
-    [string]$Version = '1.0.0'
+    [string]$Version = '1.0.0',
+    [string]$Msys2Root,
+    [string]$BuildDir
 )
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
+if ([string]::IsNullOrWhiteSpace($Msys2Root)) {
+    $Msys2Root = Join-Path $root 'runtime\msys64'
+}
+if ([string]::IsNullOrWhiteSpace($BuildDir)) {
+    $BuildDir = Join-Path $root 'build-native'
+}
+$Msys2Root = [IO.Path]::GetFullPath($Msys2Root)
+$BuildDir = [IO.Path]::GetFullPath($BuildDir)
 $dist = Join-Path $root 'dist'
 $packageName = "Canon-LBP810-Windows11-x64-$Version"
 $stage = Join-Path $dist $packageName
 $zip = Join-Path $dist "$packageName.zip"
-$bridge = Join-Path $root 'build-native\bin\lbp810-bridge.exe'
-$runtimeBin = Join-Path $root 'runtime\msys64\ucrt64\bin'
+$bridge = Join-Path $BuildDir 'bin\lbp810-bridge.exe'
+$runtimeBin = Join-Path $Msys2Root 'ucrt64\bin'
 $ghostscript = Join-Path $runtimeBin 'gswin64c.exe'
 $objdump = Join-Path $runtimeBin 'objdump.exe'
 
@@ -18,6 +28,22 @@ foreach ($required in @($bridge, $ghostscript, $objdump)) {
     if (-not (Test-Path -LiteralPath $required -PathType Leaf)) {
         throw "Required file not found: $required"
     }
+}
+
+$ghostscriptVersion = (& $ghostscript --version | Select-Object -First 1).Trim()
+if ([string]::IsNullOrWhiteSpace($ghostscriptVersion)) {
+    throw "Could not determine the Ghostscript version from $ghostscript"
+}
+$ghostscriptShare = Join-Path $Msys2Root (
+    "ucrt64\share\ghostscript\$ghostscriptVersion"
+)
+if (-not (Test-Path -LiteralPath (Join-Path $ghostscriptShare 'lib') `
+        -PathType Container)) {
+    throw "Ghostscript resource directory not found: $ghostscriptShare"
+}
+$msys2Licenses = Join-Path $Msys2Root 'ucrt64\share\licenses'
+if (-not (Test-Path -LiteralPath $msys2Licenses -PathType Container)) {
+    throw "MSYS2 license directory not found: $msys2Licenses"
 }
 
 $expectedDist = [IO.Path]::GetFullPath((Join-Path $root 'dist'))
@@ -33,7 +59,9 @@ if (Test-Path -LiteralPath $zip) {
 
 $binOut = Join-Path $stage 'bin'
 $gsBinOut = Join-Path $stage 'ghostscript\bin'
-$gsShareOut = Join-Path $stage 'ghostscript\share\ghostscript\10.07.1'
+$gsShareOut = Join-Path $stage (
+    "ghostscript\share\ghostscript\$ghostscriptVersion"
+)
 $scriptsOut = Join-Path $stage 'scripts'
 $licensesOut = Join-Path $stage 'licenses'
 New-Item -ItemType Directory -Force `
@@ -67,11 +95,11 @@ foreach ($file in $seen) {
 }
 
 Copy-Item `
-    -LiteralPath (Join-Path $root 'runtime\msys64\ucrt64\share\ghostscript\10.07.1\lib') `
+    -LiteralPath (Join-Path $ghostscriptShare 'lib') `
     -Destination $gsShareOut `
     -Recurse
 Copy-Item `
-    -LiteralPath (Join-Path $root 'runtime\msys64\ucrt64\share\licenses') `
+    -LiteralPath $msys2Licenses `
     -Destination (Join-Path $licensesOut 'msys2') `
     -Recurse
 Copy-Item `
@@ -105,6 +133,10 @@ Copy-Item -LiteralPath (Join-Path $root 'LICENSE') `
 Set-Content `
     -LiteralPath (Join-Path $stage 'VERSION') `
     -Value $Version `
+    -Encoding ascii
+Set-Content `
+    -LiteralPath (Join-Path $stage 'GHOSTSCRIPT-VERSION') `
+    -Value $ghostscriptVersion `
     -Encoding ascii
 
 Compress-Archive `

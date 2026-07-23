@@ -28,13 +28,62 @@ Windows 11 его загрузить не может: все его исполн
 Этот вариант устанавливает локальный мост на тот компьютер и не использует
 другой ПК как принт-сервер.
 
-Чтобы собрать такой же переносимый ZIP из исходников:
+### Сборка ZIP из исходников
 
-```powershell
-.\scripts\Build-Release.ps1
+Сборка выполняется на Windows 11 x64. Понадобятся:
+
+- PowerShell 5.1 или новее;
+- [CMake](https://cmake.org/download/) 3.21 или новее, добавленный в `PATH`;
+- [MSYS2](https://www.msys2.org/docs/installer/) x64 с окружением UCRT64;
+- Git, если репозиторий клонируется командой `git clone`;
+- около 2 ГБ свободного места для MSYS2, зависимостей и каталога сборки.
+
+Visual Studio и оригинальный 32-битный драйвер Canon для сборки не нужны.
+
+Установите MSYS2 в стандартный каталог `C:\msys64`. Затем откройте терминал
+**MSYS2 UCRT64**, полностью обновите систему и установите зависимости:
+
+```bash
+pacman -Suy
+pacman -S --needed \
+  mingw-w64-ucrt-x86_64-gcc \
+  mingw-w64-ucrt-x86_64-ninja \
+  mingw-w64-ucrt-x86_64-binutils \
+  mingw-w64-ucrt-x86_64-ghostscript
 ```
 
-Готовый архив появляется в `dist`.
+Если во время `pacman -Suy` терминал попросит закрыть все процессы MSYS2,
+откройте **MSYS2 UCRT64** снова, повторите `pacman -Suy`, а затем установите
+пакеты.
+
+После этого в обычном PowerShell:
+
+```powershell
+git clone https://github.com/jellybebra/canon-lbp810.git
+Set-Location .\canon-lbp810
+
+$msys2Root = 'C:\msys64'
+$env:PATH = "$msys2Root\ucrt64\bin;$env:PATH"
+
+cmake -S . -B build-native -G Ninja `
+  -DCMAKE_BUILD_TYPE=Release `
+  "-DCMAKE_CXX_COMPILER=$msys2Root\ucrt64\bin\g++.exe" `
+  "-DCMAKE_MAKE_PROGRAM=$msys2Root\ucrt64\bin\ninja.exe"
+
+cmake --build build-native
+.\scripts\Build-Release.ps1 -Msys2Root $msys2Root
+```
+
+`Build-Release.ps1` находит версию установленного Ghostscript, собирает
+необходимые DLL и resource-файлы, добавляет установочные сценарии и лицензии,
+а затем создаёт переносимый архив:
+
+```text
+dist\Canon-LBP810-Windows11-x64-1.0.0.zip
+```
+
+Параметры `-BuildDir` и `-Version` позволяют указать другой каталог CMake и
+номер собираемого пакета.
 
 ## Установленное состояние
 
