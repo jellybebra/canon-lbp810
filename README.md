@@ -44,6 +44,35 @@ Windows 11 его загрузить не может: все его исполн
 - локальный порт: `CanonLBP810_CAPT`, `127.0.0.1:9100`;
 - журнал: `C:\ProgramData\Canon LBP-810 Bridge\spool\bridge.log`.
 
+## Общий доступ в локальной сети
+
+Чтобы другие компьютеры могли печатать через ПК, к которому LBP-810 подключён
+по USB, включите стандартный Windows Printer Sharing:
+
+1. Откройте **Settings → Bluetooth & devices → Printers & scanners**.
+2. Выберите **Canon LBP-810**.
+3. Нажмите **Printer properties** — не **Printing preferences**.
+4. Откройте вкладку **Sharing**.
+5. Включите **Share this printer**.
+6. В поле **Share name** укажите `CanonLBP810`.
+7. Нажмите **Apply → OK**.
+
+На другом компьютере нажмите `Win + R`, откройте
+`\\ИМЯ-КОМПЬЮТЕРА\CanonLBP810` и дважды нажмите на принтер. То же подключение
+можно выполнить из PowerShell:
+
+```powershell
+Add-Printer -ConnectionName '\\ИМЯ-КОМПЬЮТЕРА\CanonLBP810'
+```
+
+На компьютере с принтером профиль сети должен быть **Private**, а в
+**Settings → Network & internet → Advanced network settings → Advanced sharing
+settings → Private networks** должны быть включены **Network discovery** и
+**File and printer sharing**.
+
+В этом режиме компьютер с USB-принтером становится принт-сервером и должен
+оставаться включённым во время печати.
+
 ## Тест и обслуживание
 
 Тестовую страницу Windows можно отправить из PowerShell:
